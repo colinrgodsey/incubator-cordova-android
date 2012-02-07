@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!Cordova.hasResource("media")) {
-Cordova.addResource("media");
+if (!PhoneGap.hasResource("media")) {
+PhoneGap.addResource("media");
 
 /**
  * This class provides access to the device media, interfaces to both sound and video
@@ -60,8 +60,8 @@ var Media = function(src, successCallback, errorCallback, statusCallback, positi
         return;
     }
 
-    this.id = Cordova.createUUID();
-    Cordova.mediaObjects[this.id] = this;
+    this.id = PhoneGap.createUUID();
+    PhoneGap.mediaObjects[this.id] = this;
     this.src = src;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
@@ -105,28 +105,28 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  * Start or resume playing audio file.
  */
 Media.prototype.play = function() {
-    Cordova.exec(null, null, "Media", "startPlayingAudio", [this.id, this.src]);
+    PhoneGap.exec(null, null, "Media", "startPlayingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop playing audio file.
  */
 Media.prototype.stop = function() {
-    return Cordova.exec(null, null, "Media", "stopPlayingAudio", [this.id]);
+    return PhoneGap.exec(null, null, "Media", "stopPlayingAudio", [this.id]);
 };
 
 /**
  * Seek or jump to a new time in the track..
  */
 Media.prototype.seekTo = function(milliseconds) {
-    Cordova.exec(null, null, "Media", "seekToAudio", [this.id, milliseconds]);
+    PhoneGap.exec(null, null, "Media", "seekToAudio", [this.id, milliseconds]);
 };
 
 /**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
-    Cordova.exec(null, null, "Media", "pausePlayingAudio", [this.id]);
+    PhoneGap.exec(null, null, "Media", "pausePlayingAudio", [this.id]);
 };
 
 /**
@@ -143,49 +143,49 @@ Media.prototype.getDuration = function() {
  * Get position of audio.
  */
 Media.prototype.getCurrentPosition = function(success, fail) {
-    Cordova.exec(success, fail, "Media", "getCurrentPositionAudio", [this.id]);
+    PhoneGap.exec(success, fail, "Media", "getCurrentPositionAudio", [this.id]);
 };
 
 /**
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    Cordova.exec(null, null, "Media", "startRecordingAudio", [this.id, this.src]);
+    PhoneGap.exec(null, null, "Media", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    Cordova.exec(null, null, "Media", "stopRecordingAudio", [this.id]);
+    PhoneGap.exec(null, null, "Media", "stopRecordingAudio", [this.id]);
 };
 
 /**
  * Release the resources.
  */
 Media.prototype.release = function() {
-    Cordova.exec(null, null, "Media", "release", [this.id]);
+    PhoneGap.exec(null, null, "Media", "release", [this.id]);
 };
 
 /**
  * Adjust the volume.
  */
 Media.prototype.setVolume = function(volume) {
-    Cordova.exec(null, null, "Media", "setVolume", [this.id, volume]);
+    PhoneGap.exec(null, null, "Media", "setVolume", [this.id, volume]);
 };
 
 /**
  * List of media objects.
  * PRIVATE
  */
-Cordova.mediaObjects = {};
+PhoneGap.mediaObjects = {};
 
 /**
  * Object that receives native callbacks.
  * PRIVATE
  * @constructor
  */
-Cordova.Media = function() {};
+PhoneGap.Media = function() {};
 
 /**
  * Get the media object.
@@ -193,8 +193,8 @@ Cordova.Media = function() {};
  *
  * @param id            The media object id (string)
  */
-Cordova.Media.getMediaObject = function(id) {
-    return Cordova.mediaObjects[id];
+PhoneGap.Media.getMediaObject = function(id) {
+    return PhoneGap.mediaObjects[id];
 };
 
 /**
@@ -205,8 +205,8 @@ Cordova.Media.getMediaObject = function(id) {
  * @param status        The status code (int)
  * @param msg           The status message (string)
  */
-Cordova.Media.onStatus = function(id, msg, value) {
-    var media = Cordova.mediaObjects[id];
+PhoneGap.Media.onStatus = function(id, msg, value) {
+    var media = PhoneGap.mediaObjects[id];
     // If state update
     if (msg === Media.MEDIA_STATE) {
         if (value === Media.MEDIA_STOPPED) {
@@ -220,6 +220,10 @@ Cordova.Media.onStatus = function(id, msg, value) {
     }
     else if (msg === Media.MEDIA_DURATION) {
         media._duration = value;
+        if (media.durationCallback) {
+            media.durationCallback();
+        }
+        
     }
     else if (msg === Media.MEDIA_ERROR) {
         if (media.errorCallback) {

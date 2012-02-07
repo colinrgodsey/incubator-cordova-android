@@ -31,8 +31,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This class implements the audio playback and recording capabilities used by Cordova.
- * It is called by the AudioHandler Cordova class.
+ * This class implements the audio playback and recording capabilities used by PhoneGap.
+ * It is called by the AudioHandler PhoneGap class.
  * Only one file can be played or recorded per class instance.
  * 
  * Local audio files must reside in one of two places:
@@ -116,7 +116,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void startRecording(String file) {
 		if (this.mPlayer != null) {
 			Log.d(LOG_TAG, "AudioPlayer Error: Can't record in play mode.");
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
 		}
 		
 		// Make sure we're not already recording
@@ -137,11 +137,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
 		}
 	}
 	
@@ -183,7 +183,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void startPlaying(String file) {
 		if (this.recorder != null) {
 		    Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
 		}
 		
 		// If this is a new request to play audio, or stopped
@@ -223,12 +223,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 					this.mPlayer.prepare();
 
 					// Get duration
-					this.duration = getDurationInSeconds();
+					//this.duration = getDurationInSeconds();
+					this.duration = -1;
 				}
 			} 
 			catch (Exception e) { 
 				e.printStackTrace(); 
-				this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+				this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
 			}
 		}
 
@@ -242,7 +243,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			}
 			else {
 			    Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
-				this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+				this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
 			}
 		}
 	} 
@@ -254,7 +255,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		if (this.mPlayer != null) {
 		    this.mPlayer.seekTo(milliseconds);
 		    Log.d(LOG_TAG, "Send a onStatus update for the new seek");
-		    this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+milliseconds/1000.0f+");");
+		    this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+milliseconds/1000.0f+");");
 		}
 	}
 	
@@ -270,7 +271,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
 		}
 	}
 
@@ -284,7 +285,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
 		}
 	}
 	
@@ -305,7 +306,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public long getCurrentPosition() {
 		if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
 		    int curPos = this.mPlayer.getCurrentPosition();
-		    this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+curPos/1000.0f+");");
+		    this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+curPos/1000.0f+");");
 			return curPos;
 		} 
 		else { 
@@ -366,26 +367,30 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 * @param mPlayer			The MediaPlayer that is ready for playback 
 	 */
 	public void onPrepared(MediaPlayer mPlayer) {
-		// Listen for playback completion
-		this.mPlayer.setOnCompletionListener(this);
+		try {
+			// Listen for playback completion
+			this.mPlayer.setOnCompletionListener(this);
 
-		// If start playing after prepared
-		if (!this.prepareOnly) {
-			
-			// Start playing
-			this.mPlayer.start();
+			// Save off duration
+			this.duration = getDurationInSeconds();	
 
-			// Set player init flag
-			this.setState(MEDIA_RUNNING);
+			// If start playing after prepared
+			if (!this.prepareOnly) {
+
+				// Start playing
+				this.mPlayer.start();
+
+				// Set player init flag
+				this.setState(MEDIA_RUNNING);
+			}
+
+			this.prepareOnly = false;
+
+			// Send status notification to JavaScript
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_DURATION+","+this.duration+");");
+		} catch(Exception e) {
+			Log.d(LOG_TAG, "onPrepared exception: " + e.getMessage());
 		}
-		
-		// Save off duration
-		this.duration = getDurationInSeconds();	
-		this.prepareOnly = false;
-
-		// Send status notification to JavaScript
-		this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_DURATION+","+this.duration+");");
-		
 	}
 
 	/**
@@ -413,7 +418,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		this.mPlayer.release();
 		
 		// Send error notification to JavaScript
-		this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+arg1+");");
+		this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+arg1+");");
 		return false;
 	}
 	
@@ -424,7 +429,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 */
 	private void setState(int state) {
 		if (this.state != state) {
-			this.handler.sendJavascript("Cordova.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+state+");");
+			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+state+");");
 		}
 		
 		this.state = state;
