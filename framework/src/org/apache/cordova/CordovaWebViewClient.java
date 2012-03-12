@@ -31,6 +31,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -50,6 +51,11 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     public CordovaWebViewClient(DroidGap ctx) {
         this.ctx = ctx;
+    }
+    
+    @Override
+    public WebResourceResponse shouldInterceptRequest(WebView wv, String url) {
+    	return super.shouldInterceptRequest(wv, ctx.onInterceptRequest(wv, url));
     }
     
     /**
@@ -86,6 +92,16 @@ public class CordovaWebViewClient extends WebViewClient {
                 ctx.startActivity(intent);
             } catch (android.content.ActivityNotFoundException e) {
                 LOG.e(TAG, "Error showing map "+url+": "+ e.toString());
+            }
+        }
+        
+        else if (url.startsWith("market:")) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                ctx.startActivity(intent);
+            } catch (android.content.ActivityNotFoundException e) {
+                LOG.e(TAG, "Error showing market "+url+": "+ e.toString());
             }
         }
 
@@ -171,7 +187,6 @@ public class CordovaWebViewClient extends WebViewClient {
     @Override
     public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host,
             String realm) {
-       
         // get the authentication token
         AuthenticationToken token = ctx.getAuthenticationToken(host,realm);
         

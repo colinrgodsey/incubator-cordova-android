@@ -20,7 +20,11 @@ package org.apache.cordova;
 import org.apache.cordova.api.LOG;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.view.View.MeasureSpec;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 
 /**
@@ -34,6 +38,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
     private int oldWidth = 0; // Need to save old width for orientation change          
     private int screenWidth = 0;
     private int screenHeight = 0;
+    private boolean softKeyboardOpen = false;
     private DroidGap app = null;
                 
     public LinearLayoutSoftKeyboardDetect(Context context, int width, int height) {
@@ -41,8 +46,9 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         screenWidth = width;
         screenHeight = height;
         app = (DroidGap) context;
+        
     }
-
+    
     @Override
     /**
      * Start listening to new measurement events.  Fire events when the height 
@@ -61,7 +67,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
 
         // Get the current height of the visible part of the screen.
         // This height will not included the status bar.\
-        int width, height;
+        int width, height; 
 
         height = MeasureSpec.getSize(heightMeasureSpec);
         width = MeasureSpec.getSize(widthMeasureSpec);
@@ -69,14 +75,19 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         LOG.v(TAG, "Height = %d", height);             
         LOG.v(TAG, "Old Width = %d", oldWidth);
         LOG.v(TAG, "Width = %d", width);
-
+        
+        InputMethodManager imm = ((InputMethodManager) app.getSystemService(Context.INPUT_METHOD_SERVICE));
+        
+        boolean isOpen = imm.isActive(app.appView);
+        LOG.d(TAG, isOpen == true ? "true" : "false");
+        
         // If the oldHeight = 0 then this is the first measure event as the app starts up.
         // If oldHeight == height then we got a measurement change that doesn't affect us.
-        if (oldHeight == 0 || oldHeight == height) {
+        if ((oldHeight == 0 || oldHeight == height) && isOpen == softKeyboardOpen) {
             LOG.d(TAG, "Ignore this event");
         }
         // Account for orientation change and ignore this event/Fire orientation change
-        else if(screenHeight == width)
+        else if(screenHeight == width && isOpen == softKeyboardOpen)
         {
             int tmp_var = screenHeight;
             screenHeight = screenWidth;
@@ -85,13 +96,13 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         }
         // If the height as gotten bigger then we will assume the soft keyboard has 
         // gone away.
-        else if (height > oldHeight) {
+        else if (height > oldHeight || (!isOpen && softKeyboardOpen)) {
             if(app != null)
                 app.sendJavascript("Cordova.fireDocumentEvent('hidekeyboard');");
         } 
         // If the height as gotten smaller then we will assume the soft keyboard has 
         // been displayed.
-        else if (height < oldHeight) {
+        else if (height < oldHeight || (isOpen && !softKeyboardOpen)) {
             if(app != null)
                 app.sendJavascript("Cordova.fireDocumentEvent('showkeyboard');");
         }
@@ -99,6 +110,8 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // Update the old height for the next event
         oldHeight = height;
         oldWidth = width;
+        
+        softKeyboardOpen = isOpen;
     }
 
 }

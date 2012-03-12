@@ -49,18 +49,24 @@ import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.HttpAuthHandler;
@@ -224,7 +230,7 @@ public class DroidGap extends CordovaInterface {
     protected boolean keepRunning = true;
 
     // preferences read from cordova.xml
-    protected PreferenceSet preferences;
+    protected PreferenceSet preferences = null;
 
     private boolean classicRender;
 
@@ -309,6 +315,14 @@ public class DroidGap extends CordovaInterface {
         authenticationTokens.clear();
     }
     
+    public void onCreate(Bundle savedInstanceState, boolean doNothing) {
+    	if(doNothing) {
+    		super.onCreate(savedInstanceState);
+    		return;
+    	}
+    	
+    	onCreate(savedInstanceState);
+    }
     
     /** 
      * Called when the activity is first created. 
@@ -317,6 +331,11 @@ public class DroidGap extends CordovaInterface {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	if(preferences != null) {
+    		super.onCreate(savedInstanceState);
+    		return;
+    	}
+    	
         preferences = new PreferenceSet();
 
         // Load Cordova configuration:
@@ -1363,6 +1382,10 @@ public class DroidGap extends CordovaInterface {
         return false;
     }
 
+    public String onInterceptRequest(WebView wv, String url) {
+    	return url;
+    }
+    
     /* 
      * Hook in DroidGap for menu plugins
      * 

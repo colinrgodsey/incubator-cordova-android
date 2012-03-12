@@ -25,6 +25,7 @@ import org.json.JSONException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+//import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -40,7 +41,20 @@ import android.widget.EditText;
  * This class is the WebChromeClient that implements callbacks for our web view.
  */
 public class CordovaChromeClient extends WebChromeClient {
-    
+    private static final class Log {
+    	static int d(String tag, String msg) {
+    		if(msg == null || msg.length() == 0) return 0;
+    		return android.util.Log.d(tag, msg);
+    	}
+    	static int w(String tag, String msg) {
+    		if(msg == null || msg.length() == 0) return 0;
+    		return android.util.Log.w(tag, msg);
+    	}
+    	static int i(String tag, String msg) {
+    		if(msg == null || msg.length() == 0) return 0;
+    		return android.util.Log.i(tag, msg);
+    	}
+    }
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
@@ -171,11 +185,14 @@ public class CordovaChromeClient extends WebChromeClient {
         if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
             reqOk = true;
         }
-        
+
         // Calling PluginManager.exec() to call a native service using 
         // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
         if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
             JSONArray array;
+            Log.d(TAG, message);
+            Log.d(TAG, defaultValue);
+            
             try {
                 array = new JSONArray(defaultValue.substring(4));
                 String service = array.getString(0);
