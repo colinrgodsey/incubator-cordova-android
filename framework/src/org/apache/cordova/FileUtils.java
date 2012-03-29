@@ -95,140 +95,123 @@ public class FileUtils extends Plugin {
         //System.out.println("FileUtils.execute("+action+")");
 
         try {
-            try {
-                if (action.equals("testSaveLocationExists")) {
-                    boolean b = DirectoryManager.testSaveLocationExists();
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("getFreeDiskSpace")) {
-                    long l = DirectoryManager.getFreeDiskSpace(false);
-                    return new PluginResult(status, l);
-                }
-                else if (action.equals("testFileExists")) {
-                    boolean b = DirectoryManager.testFileExists(args.getString(0));
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("testDirectoryExists")) {
-                    boolean b = DirectoryManager.testFileExists(args.getString(0));
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("readAsText")) {
-                    String s = this.readAsText(args.getString(0), args.getString(1));
-                    return new PluginResult(status, s);
-                }
-                else if (action.equals("readAsDataURL")) {
-                    String s = this.readAsDataURL(args.getString(0));
-                    return new PluginResult(status, s);
-                }
-                else if (action.equals("write")) {
-                    long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
-                    return new PluginResult(status, fileSize);
-                }
-                else if (action.equals("truncate")) {
-                    long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
-                    return new PluginResult(status, fileSize);
-                }
-                else if (action.equals("requestFileSystem")) {
-                    long size = args.optLong(1);
-                    if (size != 0) {
-                        if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
-                            JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
-                            return new PluginResult(PluginResult.Status.ERROR, error);
-                        }
-                    }
-                    JSONObject obj = requestFileSystem(args.getInt(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castFS");
-                }
-                else if (action.equals("resolveLocalFileSystemURI")) {
-                    JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("getMetadata")) {
-                    JSONObject obj = getMetadata(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castDate");
-                }
-                else if (action.equals("getFileMetadata")) {
-                    JSONObject obj = getFileMetadata(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castDate");
-                }
-                else if (action.equals("getParent")) {
-                    JSONObject obj = getParent(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("getDirectory")) {
-                    JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("getFile")) {
-                    JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("remove")) {
-                    boolean success;
-
-                    success = remove(args.getString(0));
-
-                    if (success) {
-                        notifyDelete(args.getString(0));
-                        return new PluginResult(status);
-                    } else {
-                        JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                        return new PluginResult(PluginResult.Status.ERROR, error);
-                    }
-                }
-                else if (action.equals("removeRecursively")) {
-                    boolean success = removeRecursively(args.getString(0));
-                    if (success) {
-                        return new PluginResult(status);
-                    } else {
-                        JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                        return new PluginResult(PluginResult.Status.ERROR, error);
-                    }
-                }
-                else if (action.equals("moveTo")) {
-                    JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), true);
-                    return new PluginResult(status, entry, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("copyTo")) {
-                    JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), false);
-                    return new PluginResult(status, entry, "window.localFileSystem._castEntry");
-                }
-                else if (action.equals("readEntries")) {
-                    JSONArray entries = readEntries(args.getString(0));
-                    return new PluginResult(status, entries, "window.localFileSystem._castEntries");
-                }
-                return new PluginResult(status, result);
-            } catch (FileNotFoundException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NOT_FOUND_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (FileExistsException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.PATH_EXISTS_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (NoModificationAllowedException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (JSONException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (InvalidModificationException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.INVALID_MODIFICATION_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (MalformedURLException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.ENCODING_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (IOException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.INVALID_MODIFICATION_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (EncodingException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.ENCODING_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
-            } catch (TypeMismatchException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.TYPE_MISMATCH_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+            if (action.equals("testSaveLocationExists")) {
+                boolean b = DirectoryManager.testSaveLocationExists();
+                return new PluginResult(status, b);
             }
+            else if (action.equals("getFreeDiskSpace")) {
+                long l = DirectoryManager.getFreeDiskSpace(false);
+                return new PluginResult(status, l);
+            }
+            else if (action.equals("testFileExists")) {
+                boolean b = DirectoryManager.testFileExists(args.getString(0));
+                return new PluginResult(status, b);
+            }
+            else if (action.equals("testDirectoryExists")) {
+                boolean b = DirectoryManager.testFileExists(args.getString(0));
+                return new PluginResult(status, b);
+            }
+            else if (action.equals("readAsText")) {
+                String s = this.readAsText(args.getString(0), args.getString(1));
+                return new PluginResult(status, s);
+            }
+            else if (action.equals("readAsDataURL")) {
+                String s = this.readAsDataURL(args.getString(0));
+                return new PluginResult(status, s);
+            }
+            else if (action.equals("write")) {
+                long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
+                return new PluginResult(status, fileSize);
+            }
+            else if (action.equals("truncate")) {
+                long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
+                return new PluginResult(status, fileSize);
+            }
+            else if (action.equals("requestFileSystem")) {
+                long size = args.optLong(1);
+                if (size != 0) {
+                    if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
+                        return new PluginResult(PluginResult.Status.ERROR, FileUtils.QUOTA_EXCEEDED_ERR);
+                    }
+                }
+                JSONObject obj = requestFileSystem(args.getInt(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("resolveLocalFileSystemURI")) {
+                JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getMetadata")) {
+                JSONObject obj = getMetadata(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getFileMetadata")) {
+                JSONObject obj = getFileMetadata(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getParent")) {
+                JSONObject obj = getParent(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getDirectory")) {
+                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getFile")) {
+                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("remove")) {
+                boolean success;
+
+                success = remove(args.getString(0));
+
+                if (success) {
+                    notifyDelete(args.getString(0));
+                    return new PluginResult(status);
+                } else {
+                    return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                }
+            }
+            else if (action.equals("removeRecursively")) {
+                boolean success = removeRecursively(args.getString(0));
+                if (success) {
+                    return new PluginResult(status);
+                } else {
+                    return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                }
+            }
+            else if (action.equals("moveTo")) {
+                JSONObject entry = transferTo(args.getString(0), args.getString(1), args.getString(2), true);
+                return new PluginResult(status, entry);
+            }
+            else if (action.equals("copyTo")) {
+                JSONObject entry = transferTo(args.getString(0), args.getString(1), args.getString(2), false);
+                return new PluginResult(status, entry);
+            }
+            else if (action.equals("readEntries")) {
+                JSONArray entries = readEntries(args.getString(0));
+                return new PluginResult(status, entries);
+            }
+            return new PluginResult(status, result);
+        } catch (FileNotFoundException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
+        } catch (FileExistsException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.PATH_EXISTS_ERR);
+        } catch (NoModificationAllowedException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
         } catch (JSONException e) {
-            e.printStackTrace();
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+        } catch (InvalidModificationException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
+        } catch (MalformedURLException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
+        } catch (IOException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
+        } catch (EncodingException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
+        } catch (TypeMismatchException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.TYPE_MISMATCH_ERR);
         }
     }
 
@@ -295,7 +278,7 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONArray readEntries(String fileName) throws FileNotFoundException, JSONException {
-        File fp = new File(fileName);
+        File fp = createFileObject(fileName);
 
         if (!fp.exists()) {
             // The directory we are listing doesn't exist so we should fail.
@@ -328,7 +311,11 @@ public class FileUtils extends Plugin {
      * @throws EncodingException
      * @throws JSONException
      */
-    private JSONObject transferTo(String fileName, JSONObject newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
+    private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
+        fileName = stripFileProtocol(fileName);
+        newParent = stripFileProtocol(newParent);
+
+
         // Check for invalid file name
         if (newName != null && newName.contains(":")) {
             throw new EncodingException("Bad file name");
@@ -341,7 +328,7 @@ public class FileUtils extends Plugin {
             throw new FileNotFoundException("The source does not exist");
         }
 
-        File destinationDir = new File(newParent.getString("fullPath"));
+        File destinationDir = new File(newParent);
         if (!destinationDir.exists()) {
             // The destination does not exist so we should fail.
             throw new FileNotFoundException("The source does not exist");
@@ -569,7 +556,7 @@ public class FileUtils extends Plugin {
      * @throws FileExistsException
      */
     private boolean removeRecursively(String filePath) throws FileExistsException {
-        File fp = new File(filePath);
+        File fp = createFileObject(filePath);
 
         // You can't delete the root directory.
         if (atRootDirectory(filePath)) {
@@ -610,7 +597,7 @@ public class FileUtils extends Plugin {
      * @throws InvalidModificationException
      */
     private boolean remove(String filePath) throws NoModificationAllowedException, InvalidModificationException {
-        File fp = new File(filePath);
+        File fp = createFileObject(filePath);
 
         // You can't delete the root directory.
         if (atRootDirectory(filePath)) {
@@ -701,6 +688,7 @@ public class FileUtils extends Plugin {
         if (fileName.startsWith("/")) {
             fp = new File(fileName);
         } else {
+            dirPath = stripFileProtocol(dirPath);
             fp = new File(dirPath + File.separator + fileName);
         }
         return fp;
@@ -715,6 +703,8 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getParent(String filePath) throws JSONException {
+        filePath = stripFileProtocol(filePath);
+
         if (atRootDirectory(filePath)) {
             return getEntry(filePath);
         }
@@ -729,11 +719,40 @@ public class FileUtils extends Plugin {
      * @return true if we are at the root, false otherwise.
      */
     private boolean atRootDirectory(String filePath) {
+        filePath = stripFileProtocol(filePath);
+
         if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getPackageName() + "/cache") ||
-                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath())) {
+                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) || 
+                filePath.equals("/data/data/" + ctx.getPackageName())) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * This method removes the "file://" from the passed in filePath
+     * 
+     * @param filePath to be checked.
+     * @return
+     */
+    private String stripFileProtocol(String filePath) {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+        return filePath;
+    }
+    
+    /**
+     * Create a File object from the passed in path
+     * 
+     * @param filePath
+     * @return
+     */
+    private File createFileObject(String filePath) {
+        filePath = stripFileProtocol(filePath);
+
+        File file = new File(filePath);
+        return file;
     }
 
     /**
@@ -745,7 +764,7 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getMetadata(String filePath) throws FileNotFoundException, JSONException {
-        File file = new File(filePath);
+        File file = createFileObject(filePath);
 
         if (!file.exists()) {
             throw new FileNotFoundException("Failed to find file in getMetadata");
@@ -766,7 +785,7 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getFileMetadata(String filePath) throws FileNotFoundException, JSONException {
-        File file = new File(filePath);
+        File file = createFileObject(filePath);
 
         if (!file.exists()) {
             throw new FileNotFoundException("File: " + filePath + " does not exist.");
@@ -796,18 +815,18 @@ public class FileUtils extends Plugin {
             File fp;
             fs.put("name", "temporary");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + ctx.getPackageName() + "/cache/"));
-
-                // Create the cache dir if it doesn't exist.
                 fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
                     "/Android/data/" + ctx.getPackageName() + "/cache/");
-            } else {
-                fs.put("root", getEntry("/data/data/" + ctx.getPackageName() + "/cache/"));
                 // Create the cache dir if it doesn't exist.
+                fp.mkdirs();
+                fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
+                        "/Android/data/" + ctx.getPackageName() + "/cache/"));
+            } else {
                 fp = new File("/data/data/" + ctx.getPackageName() + "/cache/");
+                // Create the cache dir if it doesn't exist.
+                fp.mkdirs();
+                fs.put("root", getEntry("/data/data/" + ctx.getPackageName() + "/cache/"));
             }
-            fp.mkdirs();
         }
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
@@ -820,7 +839,7 @@ public class FileUtils extends Plugin {
         else {
             throw new IOException("No filesystem of type requested");
         }
-
+ 
         return fs;
     }
 
@@ -837,7 +856,7 @@ public class FileUtils extends Plugin {
         entry.put("isFile", file.isFile());
         entry.put("isDirectory", file.isDirectory());
         entry.put("name", file.getName());
-        entry.put("fullPath", file.getAbsolutePath());
+        entry.put("fullPath", "file://" + file.getAbsolutePath());
         // I can't add the next thing it as it would be an infinite loop
         //entry.put("filesystem", null);
 
@@ -892,8 +911,8 @@ public class FileUtils extends Plugin {
      */
     public String readAsText(String filename, String encoding) throws FileNotFoundException, IOException {
         byte[] bytes = new byte[1000];
-           BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
-           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int numRead = 0;
         while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
             bos.write(bytes, 0, numRead);
@@ -910,8 +929,8 @@ public class FileUtils extends Plugin {
      */
     public String readAsDataURL(String filename) throws FileNotFoundException, IOException {
         byte[] bytes = new byte[1000];
-           BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
-           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int numRead = 0;
         while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
             bos.write(bytes, 0, numRead);
@@ -953,20 +972,22 @@ public class FileUtils extends Plugin {
      */
     /**/
     public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
+        filename = stripFileProtocol(filename);
+
         boolean append = false;
         if (offset > 0) {
             this.truncateFile(filename, offset);
             append = true;
         }
 
-           byte [] rawData = data.getBytes();
-           ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-           FileOutputStream out = new FileOutputStream(filename, append);
-           byte buff[] = new byte[rawData.length];
-           in.read(buff, 0, buff.length);
-           out.write(buff, 0, rawData.length);
-           out.flush();
-           out.close();
+       byte [] rawData = data.getBytes();
+       ByteArrayInputStream in = new ByteArrayInputStream(rawData);
+       FileOutputStream out = new FileOutputStream(filename, append);
+       byte buff[] = new byte[rawData.length];
+       in.read(buff, 0, buff.length);
+       out.write(buff, 0, rawData.length);
+       out.flush();
+       out.close();
 
         return data.length();
     }
@@ -979,6 +1000,8 @@ public class FileUtils extends Plugin {
      * @throws FileNotFoundException, IOException
      */
     private long truncateFile(String filename, long size) throws FileNotFoundException, IOException {
+        filename = stripFileProtocol(filename);
+
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
 
         if (raf.length() >= size) {
@@ -1003,6 +1026,7 @@ public class FileUtils extends Plugin {
             return ctx.getContentResolver().openInputStream(uri);
         }
         else {
+            path = stripFileProtocol(path);
             return new FileInputStream(path);
         }
     }

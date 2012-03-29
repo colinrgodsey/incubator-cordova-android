@@ -196,7 +196,7 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Specify file so that large image is captured and returned
-        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Capture.jpg");
+        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Capture.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
@@ -236,7 +236,7 @@ public class Capture extends Plugin {
 
                 if (results.length() >= limit) {
                     // Send Uri back to JavaScript for listening to audio
-                    this.success(new PluginResult(PluginResult.Status.OK, results, "navigator.device.capture._castMediaFile"), this.callbackId);
+                    this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
                 } else {
                     // still need to capture more audio clips
                     captureAudio();
@@ -249,7 +249,7 @@ public class Capture extends Plugin {
                 try {
                     // Create an ExifHelper to save the exif data that is lost during compression
                     ExifHelper exif = new ExifHelper();
-                    exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx) + "/Capture.jpg");
+                    exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Capture.jpg");
                     exif.readExifData();
                     
                     // Read in bitmap of captured image
@@ -291,7 +291,7 @@ public class Capture extends Plugin {
                     
                     if (results.length() >= limit) {
                         // Send Uri back to JavaScript for viewing image
-                        this.success(new PluginResult(PluginResult.Status.OK, results, "navigator.device.capture._castMediaFile"), this.callbackId);
+                        this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
                     } else {
                         // still need to capture more images
                         captureImage();
@@ -308,7 +308,7 @@ public class Capture extends Plugin {
 
                 if (results.length() >= limit) {
                     // Send Uri back to JavaScript for viewing video
-                    this.success(new PluginResult(PluginResult.Status.OK, results, "navigator.device.capture._castMediaFile"), this.callbackId);
+                    this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
                 } else {
                     // still need to capture more video clips
                     captureVideo(duration);
@@ -319,7 +319,7 @@ public class Capture extends Plugin {
         else if (resultCode == Activity.RESULT_CANCELED) {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results, "navigator.device.capture._castMediaFile"), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
             }
             // user canceled the action
             else {
@@ -330,7 +330,7 @@ public class Capture extends Plugin {
         else {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results, "navigator.device.capture._castMediaFile"), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
             }
             // something bad happened
             else {

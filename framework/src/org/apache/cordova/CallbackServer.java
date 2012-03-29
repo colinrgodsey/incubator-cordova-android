@@ -251,7 +251,7 @@ public class CallbackServer implements Runnable {
 									 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
 								 }
 								 else {
-									 //System.out.println("CallbackServer -- sending item");
+									 System.out.println("CallbackServer -- sending item");
 									 response = "HTTP/1.1 200 OK\r\n\r\n";
 									 String js = this.getJavascript();
 									 if (js != null) {
@@ -334,6 +334,7 @@ public class CallbackServer implements Runnable {
 	        if (this.javascript.size() == 0) { 
 	            this.empty = true;
 	        }
+	        Log.d("SDSDS", statement);
 	        return statement;
 	    }
 	}

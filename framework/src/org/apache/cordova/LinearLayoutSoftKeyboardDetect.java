@@ -98,13 +98,13 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // gone away.
         else if (height > oldHeight || (!isOpen && softKeyboardOpen)) {
             if(app != null)
-                app.sendJavascript("Cordova.fireDocumentEvent('hidekeyboard');");
+                app.sendJavascript("cordova.fireDocumentEvent('hidekeyboard');");
         } 
         // If the height as gotten smaller then we will assume the soft keyboard has 
         // been displayed.
         else if (height < oldHeight || (isOpen && !softKeyboardOpen)) {
             if(app != null)
-                app.sendJavascript("Cordova.fireDocumentEvent('showkeyboard');");
+                app.sendJavascript("cordova.fireDocumentEvent('showkeyboard');");
         }
 
         // Update the old height for the next event
