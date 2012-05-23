@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -212,6 +213,9 @@ public class DroidGap extends Activity implements CordovaInterface {
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
     protected boolean keepRunning = true;
+    
+    // Whether or not the layout should try to detect the keyboard
+    protected boolean triggersKeyboardEvent = true;
 
     // preferences read from cordova.xml
     protected PreferenceSet preferences = null;
@@ -344,6 +348,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         int height = display.getHeight();
         
         root = new LinearLayoutSoftKeyboardDetect(this, width, height);
+
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(this.backgroundColor);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
@@ -361,6 +366,10 @@ public class DroidGap extends Activity implements CordovaInterface {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
     
+    public WebView createWebView() {
+    	return new WebView(DroidGap.this); 
+    }
+    
     /**
      * Create and initialize web container.
      */
@@ -368,15 +377,16 @@ public class DroidGap extends Activity implements CordovaInterface {
         LOG.d(TAG, "DroidGap.init()");
         
         // Create web container
-        this.appView = new WebView(DroidGap.this);
+        this.appView = createWebView();
+        
         this.appView.setId(100);
         
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.FILL_PARENT,
-                ViewGroup.LayoutParams.FILL_PARENT, 
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, 
                 1.0F));
 
-        this.appView.setWebChromeClient(new CordovaChromeClient(DroidGap.this));
+        this.appView.setWebChromeClient(new CordovaChromeClient(this));
         this.setWebViewClient(this.appView, new CordovaWebViewClient(this));
 
         this.appView.setInitialScale(0);
@@ -387,7 +397,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         WebSettings settings = this.appView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
-        settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
+        //settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
         
         //Set the nav dump for HTC
         settings.setNavDump(true);
@@ -848,7 +858,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onPause.fire();}catch(e){console.log('exception firing pause event from native');};");
+        this.sendJavascript("try{cordova.require('cordova/channel').onPause.fire();}catch(e){console.log('exception firing pause event from native');};");
 
         // Forward to plugins
         this.pluginManager.onPause(this.keepRunning);
@@ -858,6 +868,12 @@ public class DroidGap extends Activity implements CordovaInterface {
 
             // Pause JavaScript timers (including setInterval)
             this.appView.pauseTimers();
+            
+            /*try {
+				WebView.class.getMethod("onPause").invoke(this.appView);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}*/
         }
     }
 
@@ -869,7 +885,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         super.onNewIntent(intent);
 
         //Forward to plugins
-        this.pluginManager.onNewIntent(intent);
+        if(this.pluginManager != null) this.pluginManager.onNewIntent(intent);
     }
     
     @Override
@@ -889,7 +905,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onResume.fire();}catch(e){console.log('exception firing resume event from native');};");
+        this.sendJavascript("try{cordova.require('cordova/channel').onResume.fire();}catch(e){console.log('exception firing resume event from native');};");
 
         // Forward to plugins
         this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
@@ -905,6 +921,12 @@ public class DroidGap extends Activity implements CordovaInterface {
 
             // Resume JavaScript timers (including setInterval)
             this.appView.resumeTimers();
+            
+            /*try {
+				WebView.class.getMethod("onResume").invoke(this.appView);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}*/
         }
     }
     
@@ -919,7 +941,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
 
             // Send destroy event to JavaScript
-            this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
+            this.sendJavascript("try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
             // Load blank page so that JavaScript onunload is called
             this.appView.loadUrl("about:blank");
@@ -1085,7 +1107,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
             // If back key is bound, then send event to JavaScript
             if (this.bound) {
-                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
+                this.sendJavascript("cordova.fireDocumentEvent('backbutton');");
                 return true;
             }
 
@@ -1107,13 +1129,13 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If menu key
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
+            this.sendJavascript("cordova.fireDocumentEvent('menubutton');");
             return super.onKeyDown(keyCode, event);
         }
 
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
+            this.sendJavascript("cordova.fireDocumentEvent('searchbutton');");
             return true;
         }
 

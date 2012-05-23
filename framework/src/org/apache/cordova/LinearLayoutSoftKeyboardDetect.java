@@ -62,6 +62,8 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
      */
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);       
+       
+        if(!app.triggersKeyboardEvent) return;
         
         LOG.v(TAG, "We are in our onMeasure method");
 
@@ -79,7 +81,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         InputMethodManager imm = ((InputMethodManager) app.getSystemService(Context.INPUT_METHOD_SERVICE));
         
         boolean isOpen = imm.isActive(app.appView);
-        LOG.d(TAG, isOpen == true ? "true" : "false");
+        //LOG.d(TAG, isOpen == true ? "true" : "false");
         
         // If the oldHeight = 0 then this is the first measure event as the app starts up.
         // If oldHeight == height then we got a measurement change that doesn't affect us.
